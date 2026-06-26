@@ -2,6 +2,8 @@ package entities;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import exceptions.TransactionException;
@@ -15,6 +17,7 @@ public abstract class Account {
     private Integer transferKey;
 
     private User user;
+    private List<Transaction> transactions = new ArrayList<>();
     
     public Account(User user) {
         this.num = generateNum();
@@ -54,6 +57,14 @@ public abstract class Account {
 
     public User getUser() {
         return user;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
+    }
+
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
     }
 
     public void deposit(double value, String passkey) {

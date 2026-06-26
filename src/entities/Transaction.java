@@ -35,7 +35,6 @@ public class Transaction {
         return transactionType;
     }
 
-
     public Double getValue() {
         return value;
     }
