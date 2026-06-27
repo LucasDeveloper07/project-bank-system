@@ -7,16 +7,25 @@ public abstract class User {
 
     private static final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+    private Integer id;
     private String name;
     private String email;
-    private String passkey;
+    private String password;
     private LocalDate birthDate;
 
-    public User(String name, String email, String passkey, LocalDate birthDate) {
+    public User(String name, String email, String password, LocalDate birthDate) {
         this.name = name;
         this.email = email;
-        this.passkey = passkey;
+        this.password = String.valueOf(password.hashCode());
         this.birthDate = birthDate;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -35,12 +44,8 @@ public abstract class User {
         this.email = email;
     }
 
-    public String getPasskey() {
-        return passkey;
-    }
-
-    public void setPasskey(String passkey) {
-        this.passkey = passkey;
+    public String getPassword() {
+        return password;
     }
 
     public LocalDate getBirthDate() {
@@ -51,11 +56,11 @@ public abstract class User {
         this.birthDate = birthDate;
     }
 
-    public void modifiedPasskey(String newPasskey, String passkeyVerified) {
+    public void modifiedPassword(String newPassword, String passwordVerified) {
 
     }
 
-    public void modifiedName(String passkeyVerified, String newName) {
+    public void modifiedName(String passwordVerified, String newName) {
 
     }
 
