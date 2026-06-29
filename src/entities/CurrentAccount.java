@@ -8,17 +8,22 @@ public class CurrentAccount extends Account {
 
     private LocalDate maintenanceDate;
 
-    public CurrentAccount(User user) {
-        super(user);
+    public CurrentAccount(Integer transferKey) {
+        super(transferKey);
         this.maintenanceDate = getCreationDate();
     }
 
-    public LocalDate getMaintenaceDate() {
+    public CurrentAccount(String num, String agencyNum, Double balance, LocalDate creationDate, Integer transferKey, LocalDate maintenanceDate) {
+        super(num, agencyNum, balance, creationDate, transferKey);
+        this.maintenanceDate = maintenanceDate;
+    }
+
+    public LocalDate getMaintenanceDate() {
         return maintenanceDate;
     }
 
-    public void setMaintenanceDate(LocalDate maintenaceDate) {
-        this.maintenanceDate = maintenaceDate;
+    public void setMaintenanceDate(LocalDate maintenanceDate) {
+        this.maintenanceDate = maintenanceDate;
     }
 
     public void maintenanceDiscount(LocalDate dateNow) {

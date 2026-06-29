@@ -11,8 +11,8 @@ public class SavingsAccount extends Account {
 
     private InterestRate interestRate;
 
-    public SavingsAccount(User user) {
-        super(user);
+    public SavingsAccount(Integer transferKey) {
+        super(transferKey);
         this.interestRateDate = getCreationDate();
         this.interestRate = new InterestRateBrazil();
     }

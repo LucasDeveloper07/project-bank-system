@@ -19,12 +19,20 @@ public abstract class Account {
     private User user;
     private List<Transaction> transactions = new ArrayList<>();
     
-    public Account(User user) {
+    public Account(Integer transferKey) {
         this.num = generateNum();
         this.agencyNum = generateAgencyNum();
         this.balance = 0.0;
         this.creationDate = LocalDate.now();
-        this.user = user;
+        this.transferKey = transferKey;
+    }
+
+    public Account(String num, String agencyNum, Double balance, LocalDate creationDate, Integer transferKey) {
+        this.num = num;
+        this.agencyNum = agencyNum;
+        this.balance = balance;
+        this.creationDate = creationDate;
+        this.transferKey = transferKey;
     }
 
     public String getNum() {
@@ -59,6 +67,10 @@ public abstract class Account {
         return user;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public List<Transaction> getTransactions() {
         return transactions;
     }
@@ -67,23 +79,23 @@ public abstract class Account {
         transactions.add(transaction);
     }
 
-    public void deposit(double value, String passkey) {
-        if (!passkey.equals(this.getUser().getPasskey())) {
+    public void deposit(double value, String password) {
+        if (!password.equals(getUser().getPassword())) {
             throw new TransactionException("Senha incorreta!");
         }
 
         balance += value;
     }
 
-    public void withdraw(double value, String passkey) {
-        if (!passkey.equals(this.getUser().getPasskey())) {
+    public void withdraw(double value, String password) {
+        if (!password.equals(getUser().getPassword())) {
             throw new TransactionException("Senha incorreta!");
         }
 
         balance -= value;
     }
 
-    public void transfer(double value, String passkey, int transferKey) {
+    public void transfer(double value, String password, int transferKey) {
         
     }
 

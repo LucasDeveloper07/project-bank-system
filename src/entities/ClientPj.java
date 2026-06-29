@@ -21,10 +21,6 @@ public class ClientPj extends User {
         return account;
     }
 
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
     private String formatCnpj(long cnpj) {
         String formatedCnpj = String.format("%014d", cnpj);
 

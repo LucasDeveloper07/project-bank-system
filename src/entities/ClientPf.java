@@ -8,9 +8,24 @@ public class ClientPf extends User {
 
     private Account account;
 
-    public ClientPf(String name, String email, String passkey, LocalDate birthDate, long cpf) {
+    public ClientPf(String name, String email, String passkey, LocalDate birthDate, long cpf, String typeAccount, Integer transferKey) {
         super(name, email, passkey, birthDate);
         this.cpf = formatCpf(cpf);
+
+        if (typeAccount.equals("CURRENT")) {
+            this.account = new CurrentAccount(transferKey);
+            account.setUser(this);
+            
+        } else if (typeAccount.equals("SAVINGS")) {
+            this.account = new SavingsAccount(transferKey);
+            account.setUser(this);
+        }
+    }
+
+    public ClientPf(String name, String email, String passkey, LocalDate birthDate, long cpf, Account account) {
+        super(name, email, passkey, birthDate);
+        this.cpf = formatCpf(cpf);
+        this.account = account;
     }
 
     public String getCpf() {
@@ -19,10 +34,6 @@ public class ClientPf extends User {
 
     public Account getAccount() {
         return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
     }
 
     private String formatCpf(long cpf) {
