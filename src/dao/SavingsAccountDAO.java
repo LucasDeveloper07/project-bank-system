@@ -1,11 +1,15 @@
 package dao;
 
+import entities.Account;
 import entities.SavingsAccount;
 
 public interface SavingsAccountDAO {
 
     void insert(SavingsAccount savingsAccount);
-    void update(SavingsAccount savingsAccount, String passkey);
-    void delete(SavingsAccount savingsAccount, String passkey);
-    SavingsAccount findByTransferKey(String transferKey);
+    void updateBalance(SavingsAccount savingsAccount);
+    void updateInterestDate(SavingsAccount savingsAccount);
+    void delete(SavingsAccount savingsAccount, String password);
+    SavingsAccount findByUserId(int id);
+    SavingsAccount findByTransferKey(int transferKey);
+    void transfer(SavingsAccount originAccount, Account destinationAccount, double value);
 }

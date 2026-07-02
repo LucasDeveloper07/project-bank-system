@@ -6,7 +6,7 @@ import entities.CurrentAccount;
 public interface CurrentAccountDAO {
 
     void insert(CurrentAccount currentAccount);
-    void update(CurrentAccount currentAccount);
+    void updateBalance(CurrentAccount currentAccount);
     void delete(CurrentAccount currentAccount, String password);
     CurrentAccount findByUserId(int id);
     CurrentAccount findByTransferKey(int transferKey);

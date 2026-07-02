@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 
 import dao.CurrentAccountDAO;
+import dao.SavingsAccountDAO;
 import dao.UserDAO;
 import dao.db.DAOFactory;
 import dao.db.DB;
@@ -54,9 +55,9 @@ public class UserDAOJDBC implements UserDAO {
                 st.setString(8, null);
 
                 // Verificação para saber a instância de Account
-                if (clientPf.getAccount() instanceof CurrentAccount) {
+                if (user.getAccount() instanceof CurrentAccount) {
                     st.setString(6, "CURRENT");
-                } else if (clientPf.getAccount() instanceof SavingsAccount) {
+                } else if (user.getAccount() instanceof SavingsAccount) {
                     st.setString(6, "SAVINGS");
                 }
             } else if (user instanceof ClientPj clientPj) {
@@ -64,9 +65,9 @@ public class UserDAOJDBC implements UserDAO {
                 st.setString(8, clientPj.getCnpj());
                 st.setString(7, null);
 
-                if (clientPj.getAccount() instanceof CurrentAccount) {
+                if (user.getAccount() instanceof CurrentAccount) {
                     st.setString(6, "CURRENT");
-                } else if (clientPj.getAccount() instanceof SavingsAccount) {
+                } else if (user.getAccount() instanceof SavingsAccount) {
                     st.setString(6, "SAVINGS");
                 }
             }
@@ -247,8 +248,15 @@ public class UserDAOJDBC implements UserDAO {
                 user.setId(id);
 
                 return user;
-            }
+            } else if (typeAccount.equals("SAVINGS")) {
+                SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
 
+                // Chamada do construtor de ClientPf passando os atributos e a chamada do método findByUserId de SavingsAccount que retorna uma SavingsAccount
+                user = new ClientPf(name, email, password, birthDate, cpf, savingsDao.findByUserId(id));
+                user.setId(id);
+
+                return user;
+            }
         } else {
             // Instânciação do user com CNPJ
             int id = rs.getInt(1);
@@ -257,11 +265,26 @@ public class UserDAOJDBC implements UserDAO {
             String password = rs.getString(4);
             LocalDate birthDate = rs.getDate(5).toLocalDate();
             Long cnpj = rs.getLong(9);
+            String typeAccount = rs.getString(7);
 
-            user = new ClientPj(name, email, password, birthDate, cnpj);
-            user.setId(id);
+            // Verificação do tipo de conta do usuário para realizar a busca no banco de dados
+            if (typeAccount.equals("CURRENT")) {
+                CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
 
-            return user;
+                // Chamada do construtor de ClientPj passando os atributos e a chamada do método findByUserId de CurrentAccount que retorna uma CurrentAccount
+                user = new ClientPj(name, email, password, birthDate, cnpj, currentDao.findByUserId(id));
+                user.setId(id);
+
+                return user;
+            } else if (typeAccount.equals("SAVINGS")) {
+                SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+
+                // Chamada do construtor de ClientPj passando os atributos e a chamada do método findByUserId de SavingsAccount que retorna uma SavingsAccount
+                user = new ClientPf(name, email, password, birthDate, cnpj, savingsDao.findByUserId(id));
+                user.setId(id);
+
+                return user;
+            }
         }
 
         return null;

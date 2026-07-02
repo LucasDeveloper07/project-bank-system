@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
-import dao.CurrentAccountDAO;
+import dao.SavingsAccountDAO;
 import dao.UserDAO;
 import dao.db.DAOFactory;
 import dao.db.DB;
@@ -16,33 +16,32 @@ import entities.CurrentAccount;
 import entities.SavingsAccount;
 import exceptions.UserException;
 
-public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
+public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
 
     private Connection conn = null;
 
-    // Construtor para iniciar a classe com a conexão com o banco de dados já criada
-    public CurrentAccountDAOJDBC(Connection conn) {
+    public SavingsAccountDAOJDBC(Connection conn) {
         this.conn = conn;
     }
 
-    // Método para inserir a currentAccount criada no banco de dados
+    // Método para inserir a savingsAccount criada no banco de dados
     @Override
-    public void insert(CurrentAccount currentAccount) {
+    public void insert(SavingsAccount savingsAccount) {
         PreparedStatement st = null;
-        
+
         try {
-            st = conn.prepareStatement("INSERT INTO current_account "
-                + "(num, agency, balance, transfer_key, creation_date, maintenance_date, user_id) "
+            st = conn.prepareStatement("INSERT INTO savings_account "
+                + "(num, agency, balance, transfer_key, creation_date, interest_rate_date, user_id) "
                 + "VALUES "
                 + "(?, ?, ?, ?, ?, ?, ?)");
 
-            st.setString(1, currentAccount.getNum());
-            st.setString(2, currentAccount.getAgencyNum());
-            st.setDouble(3, currentAccount.getBalance());
-            st.setInt(4, currentAccount.getTransferKey());
-            st.setDate(5, java.sql.Date.valueOf(currentAccount.getCreationDate()));
-            st.setDate(6, java.sql.Date.valueOf(currentAccount.getMaintenanceDate()));
-            st.setInt(7, currentAccount.getUser().getId());
+            st.setString(1, savingsAccount.getNum());
+            st.setString(2, savingsAccount.getAgencyNum());
+            st.setDouble(3, savingsAccount.getBalance());
+            st.setInt(4, savingsAccount.getTransferKey());
+            st.setDate(5, java.sql.Date.valueOf(savingsAccount.getCreationDate()));
+            st.setDate(6, java.sql.Date.valueOf(savingsAccount.getInterestRateDate()));
+            st.setInt(7, savingsAccount.getUser().getId());
 
             int rowsAffect = st.executeUpdate();
 
@@ -58,16 +57,41 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
 
     // Método para atualizar o saldo da conta após as operações bancárias (DEPOSIT, WITHDRAW, TRANSFER, INTEREST_CREDIT, MAINTENANCE_FEE)
     @Override
-    public void updateBalance(CurrentAccount currentAccount) {
+    public void updateBalance(SavingsAccount savingsAccount) {
         PreparedStatement st = null;
 
         try {
-            st = conn.prepareStatement("UPDATE current_account "
-                + "SET balance = ? "
+            st = conn.prepareStatement("UPDATE savings_account "
+                + "SET balance = ?"
                 + "WHERE num = ?");
 
-            st.setDouble(1, currentAccount.getBalance());
-            st.setString(2, currentAccount.getNum());
+            st.setDouble(1, savingsAccount.getBalance());
+            st.setString(2, savingsAccount.getNum());
+
+            int rowsAffect = st.executeUpdate();
+
+            if (rowsAffect == 0) {
+                throw new DbException("Erro inesperado! Nenhuma linha foi atualizada.");
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+        }
+    }
+
+    // Método para atualizar a data do crédito da taxa de juros
+    @Override
+    public void updateInterestDate(SavingsAccount savingsAccount) {
+        PreparedStatement st = null;
+
+        try {
+            st = conn.prepareStatement("UPDATE savings_account "
+                + "SET interest_rate_date = ?"
+                + "WHERE num = ?");
+
+            st.setDate(1, java.sql.Date.valueOf(savingsAccount.getInterestRateDate()));
+            st.setString(2, savingsAccount.getNum());
 
             int rowsAffect = st.executeUpdate();
 
@@ -83,12 +107,12 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
 
     // Método para deletar a conta do banco de dados após o usuário encerrar a sua conta
     @Override
-    public void delete(CurrentAccount currentAccount, String password) {
+    public void delete(SavingsAccount savingsAccount, String password) {
         // Verificação da senha do usuário para confirmar a operação
-        if (!password.equals(currentAccount.getUser().getPassword())) {
+        if (password.equals(savingsAccount.getUser().getPassword())) {
             throw new UserException("Senha incorreta!");
         }
-        
+
         PreparedStatement st = null;
 
         try {
@@ -96,13 +120,13 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
 
             // Chamada da operação delete da classe UserDAO para apagar o usuário
             UserDAO userDao = DAOFactory.createUserDAO();
-            userDao.delete(currentAccount.getUser());
+            userDao.delete(savingsAccount.getUser());
 
-            // Operação para apagar a currentAccount
-            st = conn.prepareStatement("DELETE FROM current_account "
+            // Operação para apagar a savingsAccount
+            st = conn.prepareStatement("DELETE FROM savings_account "
                 + "WHERE num = ?");
 
-            st.setString(1, currentAccount.getNum());
+            st.setString(1, savingsAccount.getNum());
 
             int rowsAffect = st.executeUpdate();
 
@@ -114,23 +138,23 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
         } catch (SQLException e) {
             if (conn != null) {
                 try {
-                    conn.rollback(); // Em caso de exceção, o rollback desfaz todas as operações
+                    conn.rollback();
                 } catch (SQLException e1) {
                     throw new DbException(e1.getMessage());
                 }
             }
 
             throw new DbException(e.getMessage());
-        } catch (DbException e1) {
+        } catch (DbException e) {
             if (conn != null) {
                 try {
-                    conn.rollback(); // Em caso de exceção, o rollback desfaz todas as operações
-                } catch (SQLException e2) {
-                    throw new DbException(e2.getMessage());
+                    conn.rollback();
+                } catch (SQLException e1) {
+                    throw new DbException(e1.getMessage());
                 }
             }
 
-            throw new DbException(e1.getMessage());
+            throw new DbException(e.getMessage());
         } finally {
             if (conn != null) {
                 try {
@@ -144,21 +168,21 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
         }
     }
 
-    // Método para buscar currentAccount pelo id do usuário (Este método é usado no login para iniciar a conta do usuário)
+    // Método para buscar savingsAccount pelo id do usuário (Este método é usado no login para iniciar a conta do usuário)
     @Override
-    public CurrentAccount findByUserId(int id) {
+    public SavingsAccount findByUserId(int id) {
         PreparedStatement st = null;
         ResultSet rs = null;
 
         try {
-            st = conn.prepareStatement("SELECT * FROM current_account "
+            st = conn.prepareStatement("SELECT * FROM savings_account "
                 + "WHERE user_id = ?");
 
             st.setInt(1, id);
 
             rs = st.executeQuery();
 
-            CurrentAccount account = createCurrentAccount(rs);
+            SavingsAccount account = createSavingsAccount(rs);
 
             return account;
         } catch (SQLException e) {
@@ -169,21 +193,21 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
         }
     }
 
-    // Método para buscar currentAccount pela chave de transferência (Usado na operação bancária TRANSFER)
+    // Método para buscar savingsAccount pela chave de transferência (Usado na operação bancária TRANSFER)
     @Override
-    public CurrentAccount findByTransferKey(int transferKey) {
+    public SavingsAccount findByTransferKey(int transferKey) {
         PreparedStatement st = null;
         ResultSet rs = null;
 
         try {
-            st = conn.prepareStatement("SELECT * FROM current_account "
+            st = conn.prepareStatement("SELECT * FROM savings_account "
                 + "WHERE transfer_key = ?");
 
             st.setInt(1, transferKey);
 
             rs = st.executeQuery();
 
-            CurrentAccount account = createCurrentAccount(rs);
+            SavingsAccount account = createSavingsAccount(rs);
 
             return account;
         } catch (SQLException e) {
@@ -196,14 +220,14 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
 
     // Método para realizar a transferência entre contas
     @Override
-    public void transfer(CurrentAccount originAccount, Account destinationAccount, double value) {
+    public void transfer(SavingsAccount originAccount, Account destinationAccount, double value) {
         PreparedStatement st = null;
 
         try {
             conn.setAutoCommit(false);  // Controle manual da transação para manter a integridade do banco de dados
 
             // Retirada do saldo da conta de origem
-            st = conn.prepareStatement("UPDATE current_account "
+            st = conn.prepareStatement("UPDATE savings_account "
                 + "SET balance = ? "
                 + "WHERE num = ?");
 
@@ -284,8 +308,8 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
     }
 
     // Método privado para criar a currentAccount através do ResultSet
-    private CurrentAccount createCurrentAccount(ResultSet rs) throws SQLException {
-        CurrentAccount account = null;
+    private SavingsAccount createSavingsAccount(ResultSet rs) throws SQLException {
+        SavingsAccount account = null;
 
         if (rs.next()) {
             String num = rs.getString(1);
@@ -293,13 +317,14 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
             Double balance = rs.getDouble(3);
             Integer transferKey = rs.getInt(4);
             LocalDate creationDate = rs.getDate(5).toLocalDate();
-            LocalDate maintenanceDate = rs.getDate(6).toLocalDate();
+            LocalDate interestRateDate = rs.getDate(6).toLocalDate();
             
-            account = new CurrentAccount(num, agencyNum, balance, creationDate, transferKey, maintenanceDate);
+            account = new SavingsAccount(num, agencyNum, balance, creationDate, transferKey, interestRateDate);
 
             return account;
         }
 
         return null;
     }
+
 }
