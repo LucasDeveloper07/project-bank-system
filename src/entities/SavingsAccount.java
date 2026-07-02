@@ -17,6 +17,12 @@ public class SavingsAccount extends Account {
         this.interestRate = new InterestRateBrazil();
     }
 
+    public SavingsAccount(String num, String agencyNum, Double balance, LocalDate creationDate, Integer transferKey, LocalDate interestRateDate) {
+        super(num, agencyNum, balance, creationDate, transferKey);
+        this.interestRateDate = interestRateDate;
+        this.interestRate = new InterestRateBrazil();
+    }
+
     public LocalDate getInterestRateDate() {
         return interestRateDate;
     }

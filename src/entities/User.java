@@ -3,6 +3,10 @@ package entities;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import dao.UserDAO;
+import dao.db.DAOFactory;
+import exceptions.UserException;
+
 public abstract class User {
 
     private static final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -13,11 +17,14 @@ public abstract class User {
     private String password;
     private LocalDate birthDate;
 
-    public User(String name, String email, String password, LocalDate birthDate) {
+    private Account account;
+
+    public User(String name, String email, String password, LocalDate birthDate, Account account) {
         this.name = name;
         this.email = email;
         this.password = String.valueOf(password.hashCode());
         this.birthDate = birthDate;
+        this.account = account;
     }
 
     public Integer getId() {
@@ -56,12 +63,30 @@ public abstract class User {
         this.birthDate = birthDate;
     }
 
-    public void modifiedPassword(String newPassword, String passwordVerified) {
+    public Account getAccount() {
+        return account;
+    }
 
+    public void modifiedPassword(String newPassword, String passwordVerified) {
+        if (newPassword.equals(password)) {
+            throw new UserException("Você não pode usar a senha atual!");
+        } else if (passwordVerified.equals(password)) {
+            this.password = newPassword;
+            UserDAO userDao = DAOFactory.createUserDAO();
+            userDao.updatePassword(this);
+        } else {
+            throw new UserException("Senha incorreta!");
+        }
     }
 
     public void modifiedName(String passwordVerified, String newName) {
-
+        if (newName.equals(name)) {
+            throw new UserException("Você não pode usar o nome atual!");
+        } else if (passwordVerified.equals(password)) {
+            this.name = newName;
+            UserDAO userDao = DAOFactory.createUserDAO();
+            userDao.updateName(this);
+        }
     }
 
     public String viewDataUser() {

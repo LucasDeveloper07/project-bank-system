@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import dao.CurrentAccountDAO;
+import dao.SavingsAccountDAO;
+import dao.db.DAOFactory;
 import exceptions.TransactionException;
 
 public abstract class Account {
@@ -19,6 +22,7 @@ public abstract class Account {
     private User user;
     private List<Transaction> transactions = new ArrayList<>();
     
+    // Construtor para criar uma nova account
     public Account(Integer transferKey) {
         this.num = generateNum();
         this.agencyNum = generateAgencyNum();
@@ -27,6 +31,7 @@ public abstract class Account {
         this.transferKey = transferKey;
     }
 
+    // Construtor para instanciar uma account a partir do login
     public Account(String num, String agencyNum, Double balance, LocalDate creationDate, Integer transferKey) {
         this.num = num;
         this.agencyNum = agencyNum;
@@ -79,26 +84,90 @@ public abstract class Account {
         transactions.add(transaction);
     }
 
+    // Método para realizar o depósito em conta
     public void deposit(double value, String password) {
+        // Verificação de senha do usuário
         if (!password.equals(getUser().getPassword())) {
             throw new TransactionException("Senha incorreta!");
         }
 
         balance += value;
+
+        // Chamada da classe DAO para realizar a operação no banco de dados
+        if (this instanceof CurrentAccount currentAccount) {
+            CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
+            currentDao.updateBalance(currentAccount);
+        } else if (this instanceof SavingsAccount savingsAccount) {
+            SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+            savingsDao.updateBalance(savingsAccount);
+        }
     }
 
+    // Método para realizar o saque em conta
     public void withdraw(double value, String password) {
+        // Verificação de senha do usuário
         if (!password.equals(getUser().getPassword())) {
             throw new TransactionException("Senha incorreta!");
         }
 
         balance -= value;
+
+        // Chamada da classe DAO para realizar a operação no banco de dados
+        if (this instanceof CurrentAccount currentAccount) {
+            CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
+            currentDao.updateBalance(currentAccount);
+        } else if (this instanceof SavingsAccount savingsAccount) {
+            SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+            savingsDao.updateBalance(savingsAccount);
+        }
     }
 
+    // Método para realizar transferências entre contas
     public void transfer(double value, String password, int transferKey) {
-        
+        // Verificação de senha do usuário
+        if (!password.equals(getUser().getPassword())) {
+            throw new TransactionException("Senha incorreta!");
+        }
+
+        // Chamada da classe DAO para realizar a operação no banco de dados
+        CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
+        SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+
+        if (this instanceof CurrentAccount currentAccount) {
+            CurrentAccount currentAccountTransf = currentDao.findByTransferKey(transferKey);
+            SavingsAccount savingsAccountTransf = savingsDao.findByTransferKey(transferKey);
+
+            // Verificação para realizar a transferência na conta certa
+            if (currentAccountTransf != null) {
+                currentDao.transfer(currentAccount, currentAccountTransf, value);
+                balance -= value;
+                System.out.println("Transferência realizada com sucesso!");
+            } else if (savingsAccountTransf != null) {
+                currentDao.transfer(currentAccount, savingsAccountTransf, value);
+                balance -= value;
+                System.out.println("Transferência realizada com sucesso!");
+            } else {
+                throw new TransactionException("Conta não encontrada!");
+            }
+        } else if (this instanceof SavingsAccount savingsAccount) {
+            CurrentAccount currentAccountTransf = currentDao.findByTransferKey(transferKey);
+            SavingsAccount savingsAccountTransf = savingsDao.findByTransferKey(transferKey);
+
+            if (currentAccountTransf != null) {
+                savingsDao.transfer(savingsAccount, currentAccountTransf, value);
+                balance -= value;
+                System.out.println("Transferência realizada com sucesso!");
+            } else if (savingsAccountTransf != null) {
+                savingsDao.transfer(savingsAccount, savingsAccountTransf, value);
+                balance -= value;
+                System.out.println("Transferência realizada com sucesso!");
+            } else {
+                throw new TransactionException("Conta não encontrada!");
+            }
+        }
     }
 
+    // Método para o usuário visualizar os dados da conta
     public String viewDataAccount() {
         StringBuilder sb = new StringBuilder();
 
@@ -114,12 +183,32 @@ public abstract class Account {
         return sb.toString();
     }
 
+    // Método para realizar o desconto de manutenção na conta
     protected void maintenanceDisc(double value) {
         balance -= value;
+
+        // Chamada da classe DAO para realizar a operação no banco de dados
+        if (this instanceof CurrentAccount currentAccount) {
+            CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
+            currentDao.updateBalance(currentAccount);
+        } else if (this instanceof SavingsAccount savingsAccount) {
+            SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+            savingsDao.updateBalance(savingsAccount);
+        }
     }
 
+    // Método para creditar a taxa de juros no saldo da conta
     protected void interestCredit(double value) {
         balance += value;
+
+        // Chamada da classe DAO para realizar a operação no banco de dados
+        if (this instanceof CurrentAccount currentAccount) {
+            CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
+            currentDao.updateBalance(currentAccount);
+        } else if (this instanceof SavingsAccount savingsAccount) {
+            SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+            savingsDao.updateBalance(savingsAccount);
+        }
     }
 
     private String generateNum() {
