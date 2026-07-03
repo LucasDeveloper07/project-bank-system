@@ -110,6 +110,10 @@ public abstract class Account {
             throw new TransactionException("Senha incorreta!");
         }
 
+        if (balance < value) {
+            throw new TransactionException("Saldo insuficiente");
+        }
+
         balance -= value;
 
         // Chamada da classe DAO para realizar a operação no banco de dados
@@ -127,6 +131,10 @@ public abstract class Account {
         // Verificação de senha do usuário
         if (!password.equals(getUser().getPassword())) {
             throw new TransactionException("Senha incorreta!");
+        }
+
+        if (balance < value) {
+            throw new TransactionException("Saldo insuficiente");
         }
 
         // Chamada da classe DAO para realizar a operação no banco de dados
@@ -185,15 +193,17 @@ public abstract class Account {
 
     // Método para realizar o desconto de manutenção na conta
     protected void maintenanceDisc(double value) {
-        balance -= value;
-
-        // Chamada da classe DAO para realizar a operação no banco de dados
-        if (this instanceof CurrentAccount currentAccount) {
-            CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
-            currentDao.updateBalance(currentAccount);
-        } else if (this instanceof SavingsAccount savingsAccount) {
-            SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
-            savingsDao.updateBalance(savingsAccount);
+        if (balance >= value) {
+            balance -= value;
+    
+            // Chamada da classe DAO para realizar a operação no banco de dados
+            if (this instanceof CurrentAccount currentAccount) {
+                CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
+                currentDao.updateBalance(currentAccount);
+            } else if (this instanceof SavingsAccount savingsAccount) {
+                SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+                savingsDao.updateBalance(savingsAccount);
+            }
         }
     }
 

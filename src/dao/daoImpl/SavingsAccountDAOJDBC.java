@@ -218,6 +218,31 @@ public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
         }
     }
 
+    // Método para buscar savingsAccount pelo numero da conta
+    @Override
+    public SavingsAccount findByNum(String num) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = conn.prepareStatement("SELECT * FROM current_account "
+                + "WHERE num = ?");
+
+            st.setString(1, num);
+
+            rs = st.executeQuery();
+
+            SavingsAccount account = createSavingsAccount(rs);
+
+            return account;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
     // Método para realizar a transferência entre contas
     @Override
     public void transfer(SavingsAccount originAccount, Account destinationAccount, double value) {

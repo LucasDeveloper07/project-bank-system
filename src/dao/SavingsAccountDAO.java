@@ -11,5 +11,6 @@ public interface SavingsAccountDAO {
     void delete(SavingsAccount savingsAccount, String password);
     SavingsAccount findByUserId(int id);
     SavingsAccount findByTransferKey(int transferKey);
+    SavingsAccount findByNum(String num);
     void transfer(SavingsAccount originAccount, Account destinationAccount, double value);
 }

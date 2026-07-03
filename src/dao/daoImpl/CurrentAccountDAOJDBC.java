@@ -194,6 +194,31 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
         }
     }
 
+    // Método para buscar currentAccount pelo numero da conta
+    @Override
+    public CurrentAccount findByNum(String num) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = conn.prepareStatement("SELECT * FROM current_account "
+                + "WHERE num = ?");
+
+            st.setString(1, num);
+
+            rs = st.executeQuery();
+
+            CurrentAccount account = createCurrentAccount(rs);
+
+            return account;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
     // Método para realizar a transferência entre contas
     @Override
     public void transfer(CurrentAccount originAccount, Account destinationAccount, double value) {
