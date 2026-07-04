@@ -2,9 +2,9 @@ package services;
 
 import java.time.LocalDate;
 
-import entities.Account;
+import entities.SavingsAccount;
 
 public interface InterestRate {
 
-    Double interestCalculate(Account account, LocalDate dateNow);
+    Double interestCalculate(SavingsAccount savingsAccount, LocalDate dateNow);
 }

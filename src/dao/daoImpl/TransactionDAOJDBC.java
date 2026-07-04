@@ -11,13 +11,11 @@ import java.util.List;
 import dao.CurrentAccountDAO;
 import dao.SavingsAccountDAO;
 import dao.TransactionDAO;
-import dao.UserDAO;
 import dao.db.DAOFactory;
 import dao.db.DB;
 import dao.db.DbException;
 import entities.Account;
 import entities.Transaction;
-import entities.User;
 import enums.TransactionType;
 
 public class TransactionDAOJDBC implements TransactionDAO {

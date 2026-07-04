@@ -1,19 +1,20 @@
 package services;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
-import entities.Account;
+import entities.SavingsAccount;
 
 public class InterestRateBrazil implements InterestRate {
 
     private static final double INTEREST = 0.01;
 
     @Override
-    public Double interestCalculate(Account account, LocalDate dateNow) {
-        int days = dateNow.compareTo(account.getCreationDate());
+    public Double interestCalculate(SavingsAccount savingsAccount, LocalDate dateNow) {
+        long days = ChronoUnit.DAYS.between(savingsAccount.getInterestRateDate(), dateNow);
 
-        if (days >= 30) {
-            return account.getBalance() * INTEREST;
+        if (days >= 30 && savingsAccount.getBalance() > 0) {
+            return savingsAccount.getBalance() * INTEREST;
         }
 
         return null;

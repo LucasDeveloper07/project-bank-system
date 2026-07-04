@@ -310,7 +310,7 @@ public class UserDAOJDBC implements UserDAO {
                 SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
 
                 // Chamada do construtor de ClientPj passando os atributos e a chamada do método findByUserId de SavingsAccount que retorna uma SavingsAccount
-                user = new ClientPf(name, email, password, birthDate, cnpj, savingsDao.findByUserId(id));
+                user = new ClientPj(name, email, password, birthDate, cnpj, savingsDao.findByUserId(id));
                 user.setId(id);
 
                 return user;

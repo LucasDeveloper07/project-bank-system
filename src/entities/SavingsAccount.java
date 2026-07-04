@@ -2,6 +2,8 @@ package entities;
 
 import java.time.LocalDate;
 
+import dao.SavingsAccountDAO;
+import dao.db.DAOFactory;
 import services.InterestRate;
 import services.InterestRateBrazil;
 
@@ -29,13 +31,21 @@ public class SavingsAccount extends Account {
 
     public void setInterestRateDate(LocalDate newDate) {
         this.interestRateDate = newDate;
+
+        SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
+        savingsDao.updateInterestDate(this);
     }
 
-    public void processInterestRate(Account account) {
-        Double interest = interestRate.interestCalculate(account, LocalDate.now());
+    public void processInterestRate(SavingsAccount savingsAccount, LocalDate dateNow) {
+        Double interest = interestRate.interestCalculate(savingsAccount, dateNow);
+        double verifBalance = getBalance();
 
         if (interest != null) {
             interestCredit(interest);
+
+            if (verifBalance != getBalance()) {
+                setInterestRateDate(dateNow);
+            }
         }
     }
 

@@ -256,7 +256,7 @@ public abstract class Account {
     protected void maintenanceDisc(double value) {
         if (balance >= value) {
             balance -= value;
-    
+
             // Chamada da classe DAO para realizar a operação no banco de dados
             if (this instanceof CurrentAccount currentAccount) {
                 CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();

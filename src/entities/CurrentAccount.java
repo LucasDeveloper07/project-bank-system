@@ -35,10 +35,14 @@ public class CurrentAccount extends Account {
 
     public void maintenanceDiscount(LocalDate dateNow) {
         long days = ChronoUnit.DAYS.between(maintenanceDate, dateNow);
+        double verifBalance = getBalance();
 
         if (days >= 30) {
             maintenanceDisc(maintenanceFee);
-            setMaintenanceDate(dateNow);
+            
+            if (verifBalance != getBalance()) {
+                setMaintenanceDate(dateNow);
+            }
         }
     }
 }

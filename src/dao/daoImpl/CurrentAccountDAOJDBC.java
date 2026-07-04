@@ -14,7 +14,6 @@ import dao.db.DbException;
 import entities.Account;
 import entities.CurrentAccount;
 import entities.SavingsAccount;
-import entities.User;
 import exceptions.UserException;
 
 public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
@@ -316,7 +315,7 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
                 try {
                     conn.rollback(); // Em caso de exceção, o rollback desfaz todas as operações
                 } catch (SQLException e2) {
-                    throw new DbException(e1.getMessage());
+                    throw new DbException(e2.getMessage());
                 }
             }
 

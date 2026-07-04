@@ -109,7 +109,7 @@ public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
     @Override
     public void delete(SavingsAccount savingsAccount, String password) {
         // Verificação da senha do usuário para confirmar a operação
-        if (password.equals(savingsAccount.getUser().getPassword())) {
+        if (!password.equals(savingsAccount.getUser().getPassword())) {
             throw new UserException("Senha incorreta!");
         }
 
@@ -225,7 +225,7 @@ public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
         ResultSet rs = null;
 
         try {
-            st = conn.prepareStatement("SELECT * FROM current_account "
+            st = conn.prepareStatement("SELECT * FROM savings_account "
                 + "WHERE num = ?");
 
             st.setString(1, num);
@@ -314,7 +314,7 @@ public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
                 try {
                     conn.rollback(); // Em caso de exceção, o rollback desfaz todas as operações
                 } catch (SQLException e2) {
-                    throw new DbException(e1.getMessage());
+                    throw new DbException(e2.getMessage());
                 }
             }
 
