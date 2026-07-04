@@ -334,6 +334,8 @@ public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
 
     // Método privado para criar a currentAccount através do ResultSet
     private SavingsAccount createSavingsAccount(ResultSet rs) throws SQLException {
+        UserDAO userDao = DAOFactory.createUserDAO();
+
         SavingsAccount account = null;
 
         if (rs.next()) {
@@ -343,8 +345,10 @@ public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
             Integer transferKey = rs.getInt(4);
             LocalDate creationDate = rs.getDate(5).toLocalDate();
             LocalDate interestRateDate = rs.getDate(6).toLocalDate();
+            int user_id = rs.getInt(7);
             
             account = new SavingsAccount(num, agencyNum, balance, creationDate, transferKey, interestRateDate);
+            account.setUser(userDao.findById(user_id, account));
 
             return account;
         }

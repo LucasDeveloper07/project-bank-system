@@ -1,10 +1,14 @@
 package entities;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+import dao.CurrentAccountDAO;
+import dao.db.DAOFactory;
 
 public class CurrentAccount extends Account {
 
-    private static final Double maintenaceFee = 29.90;
+    private static final Double maintenanceFee = 29.90;
 
     private LocalDate maintenanceDate;
 
@@ -24,14 +28,17 @@ public class CurrentAccount extends Account {
 
     public void setMaintenanceDate(LocalDate maintenanceDate) {
         this.maintenanceDate = maintenanceDate;
+
+        CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
+        currentDao.updateMaintenanceDate(maintenanceDate, getNum());
     }
 
     public void maintenanceDiscount(LocalDate dateNow) {
-        int days = dateNow.compareTo(maintenanceDate);
+        long days = ChronoUnit.DAYS.between(maintenanceDate, dateNow);
 
         if (days >= 30) {
-            maintenanceDisc(maintenaceFee);
-            setMaintenanceDate(LocalDate.now());
+            maintenanceDisc(maintenanceFee);
+            setMaintenanceDate(dateNow);
         }
     }
 }

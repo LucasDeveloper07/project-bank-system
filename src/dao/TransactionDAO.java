@@ -7,6 +7,5 @@ import entities.Transaction;
 public interface TransactionDAO {
 
     void insert(Transaction transaction);
-    Transaction findById(int id);
-    List<Transaction> findAll();
+    List<Transaction> findAll(int id);
 }

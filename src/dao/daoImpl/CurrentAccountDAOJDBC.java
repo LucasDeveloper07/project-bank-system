@@ -14,6 +14,7 @@ import dao.db.DbException;
 import entities.Account;
 import entities.CurrentAccount;
 import entities.SavingsAccount;
+import entities.User;
 import exceptions.UserException;
 
 public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
@@ -68,6 +69,31 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
 
             st.setDouble(1, currentAccount.getBalance());
             st.setString(2, currentAccount.getNum());
+
+            int rowsAffect = st.executeUpdate();
+
+            if (rowsAffect == 0) {
+                throw new DbException("Erro inesperado! Nenhuma linha foi atualizada.");
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+        }
+    }
+
+    // Método para atualizar a data de desconto da taxa de manutenção
+    @Override
+    public void updateMaintenanceDate(LocalDate date, String num) {
+        PreparedStatement st = null;
+
+        try {
+            st = conn.prepareStatement("UPDATE current_account "
+                + "SET maintenance_date = ? "
+                + "WHERE num = ?");
+
+            st.setDate(1, java.sql.Date.valueOf(date));
+            st.setString(2, num);
 
             int rowsAffect = st.executeUpdate();
 
@@ -310,6 +336,8 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
 
     // Método privado para criar a currentAccount através do ResultSet
     private CurrentAccount createCurrentAccount(ResultSet rs) throws SQLException {
+        UserDAO userDao = DAOFactory.createUserDAO();
+
         CurrentAccount account = null;
 
         if (rs.next()) {
@@ -319,8 +347,10 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
             Integer transferKey = rs.getInt(4);
             LocalDate creationDate = rs.getDate(5).toLocalDate();
             LocalDate maintenanceDate = rs.getDate(6).toLocalDate();
+            int user_id = rs.getInt(7);
             
             account = new CurrentAccount(num, agencyNum, balance, creationDate, transferKey, maintenanceDate);
+            account.setUser(userDao.findById(user_id, account));
 
             return account;
         }

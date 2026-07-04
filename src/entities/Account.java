@@ -1,6 +1,7 @@
 package entities;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +9,9 @@ import java.util.Random;
 
 import dao.CurrentAccountDAO;
 import dao.SavingsAccountDAO;
+import dao.TransactionDAO;
 import dao.db.DAOFactory;
+import enums.TransactionType;
 import exceptions.TransactionException;
 
 public abstract class Account {
@@ -84,6 +87,12 @@ public abstract class Account {
         transactions.add(transaction);
     }
 
+    public void loadTransactions() {
+        TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+
+        this.transactions = transactionDao.findAll(getUser().getId());
+    }
+
     // Método para realizar o depósito em conta
     public void deposit(double value, String password) {
         // Verificação de senha do usuário
@@ -97,9 +106,21 @@ public abstract class Account {
         if (this instanceof CurrentAccount currentAccount) {
             CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
             currentDao.updateBalance(currentAccount);
+
+            Transaction transaction = new Transaction(TransactionType.DEPOSIT, value, LocalDateTime.now(), currentAccount, null);
+            addTransaction(transaction);
+
+            TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+            transactionDao.insert(transaction);
         } else if (this instanceof SavingsAccount savingsAccount) {
             SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
             savingsDao.updateBalance(savingsAccount);
+
+            Transaction transaction = new Transaction(TransactionType.DEPOSIT, value, LocalDateTime.now(), savingsAccount, null);
+            addTransaction(transaction);
+
+            TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+            transactionDao.insert(transaction);
         }
     }
 
@@ -120,9 +141,21 @@ public abstract class Account {
         if (this instanceof CurrentAccount currentAccount) {
             CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
             currentDao.updateBalance(currentAccount);
+
+            Transaction transaction = new Transaction(TransactionType.WITHDRAW, value, LocalDateTime.now(), currentAccount, null);
+            addTransaction(transaction);    
+
+            TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+            transactionDao.insert(transaction);
         } else if (this instanceof SavingsAccount savingsAccount) {
             SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
             savingsDao.updateBalance(savingsAccount);
+
+            Transaction transaction = new Transaction(TransactionType.WITHDRAW, value, LocalDateTime.now(), savingsAccount, null);
+            addTransaction(transaction);    
+
+            TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+            transactionDao.insert(transaction);
         }
     }
 
@@ -149,10 +182,24 @@ public abstract class Account {
             if (currentAccountTransf != null) {
                 currentDao.transfer(currentAccount, currentAccountTransf, value);
                 balance -= value;
+
+                Transaction transaction = new Transaction(TransactionType.TRANSFER, value, LocalDateTime.now(), currentAccount, currentAccountTransf);
+                addTransaction(transaction);    
+
+                TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+                transactionDao.insert(transaction);
+
                 System.out.println("Transferência realizada com sucesso!");
             } else if (savingsAccountTransf != null) {
                 currentDao.transfer(currentAccount, savingsAccountTransf, value);
                 balance -= value;
+
+                Transaction transaction = new Transaction(TransactionType.TRANSFER, value, LocalDateTime.now(), currentAccount, savingsAccountTransf);
+                addTransaction(transaction);    
+
+                TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+                transactionDao.insert(transaction);
+
                 System.out.println("Transferência realizada com sucesso!");
             } else {
                 throw new TransactionException("Conta não encontrada!");
@@ -164,10 +211,24 @@ public abstract class Account {
             if (currentAccountTransf != null) {
                 savingsDao.transfer(savingsAccount, currentAccountTransf, value);
                 balance -= value;
+
+                Transaction transaction = new Transaction(TransactionType.TRANSFER, value, LocalDateTime.now(), savingsAccount, currentAccountTransf);
+                addTransaction(transaction);    
+
+                TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+                transactionDao.insert(transaction);
+
                 System.out.println("Transferência realizada com sucesso!");
             } else if (savingsAccountTransf != null) {
                 savingsDao.transfer(savingsAccount, savingsAccountTransf, value);
                 balance -= value;
+
+                Transaction transaction = new Transaction(TransactionType.TRANSFER, value, LocalDateTime.now(), savingsAccount, savingsAccountTransf);
+                addTransaction(transaction);    
+
+                TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+                transactionDao.insert(transaction);
+
                 System.out.println("Transferência realizada com sucesso!");
             } else {
                 throw new TransactionException("Conta não encontrada!");
@@ -200,9 +261,21 @@ public abstract class Account {
             if (this instanceof CurrentAccount currentAccount) {
                 CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
                 currentDao.updateBalance(currentAccount);
+
+                Transaction transaction = new Transaction(TransactionType.MAINTENANCE_FEE, value, LocalDateTime.now(), currentAccount, null);
+                addTransaction(transaction);    
+
+                TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+                transactionDao.insert(transaction);
             } else if (this instanceof SavingsAccount savingsAccount) {
                 SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
                 savingsDao.updateBalance(savingsAccount);
+
+                Transaction transaction = new Transaction(TransactionType.MAINTENANCE_FEE, value, LocalDateTime.now(), savingsAccount, null);
+                addTransaction(transaction);    
+
+                TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+                transactionDao.insert(transaction);
             }
         }
     }
@@ -215,9 +288,21 @@ public abstract class Account {
         if (this instanceof CurrentAccount currentAccount) {
             CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
             currentDao.updateBalance(currentAccount);
+
+            Transaction transaction = new Transaction(TransactionType.INTEREST_CREDIT, value, LocalDateTime.now(), currentAccount, null);
+            addTransaction(transaction);    
+
+            TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+            transactionDao.insert(transaction);
         } else if (this instanceof SavingsAccount savingsAccount) {
             SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
             savingsDao.updateBalance(savingsAccount);
+
+            Transaction transaction = new Transaction(TransactionType.INTEREST_CREDIT, value, LocalDateTime.now(), savingsAccount, null);
+            addTransaction(transaction);    
+
+            TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
+            transactionDao.insert(transaction);
         }
     }
 

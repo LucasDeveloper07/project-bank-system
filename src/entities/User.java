@@ -22,7 +22,7 @@ public abstract class User {
     public User(String name, String email, String password, LocalDate birthDate, Account account) {
         this.name = name;
         this.email = email;
-        this.password = String.valueOf(password.hashCode());
+        this.password = password;
         this.birthDate = birthDate;
         this.account = account;
     }

@@ -11,11 +11,13 @@ import java.util.List;
 import dao.CurrentAccountDAO;
 import dao.SavingsAccountDAO;
 import dao.TransactionDAO;
+import dao.UserDAO;
 import dao.db.DAOFactory;
 import dao.db.DB;
 import dao.db.DbException;
 import entities.Account;
 import entities.Transaction;
+import entities.User;
 import enums.TransactionType;
 
 public class TransactionDAOJDBC implements TransactionDAO {
@@ -40,32 +42,36 @@ public class TransactionDAOJDBC implements TransactionDAO {
                 st.setString(1, "DEPOSIT");
                 st.setDouble(2, transaction.getValue());
                 st.setTimestamp(3, java.sql.Timestamp.valueOf(transaction.getDate()));
-                st.setString(4, transaction.getOriginAccount().getNum());
+                st.setInt(4, transaction.getOriginAccount().getUser().getId());
+                st.setNull(5, java.sql.Types.INTEGER);
 
             } else if (transaction.getTransactionType() == TransactionType.WITHDRAW) {
                 st.setString(1, "WITHDRAW");
                 st.setDouble(2, transaction.getValue());
                 st.setTimestamp(3, java.sql.Timestamp.valueOf(transaction.getDate()));
-                st.setString(4, transaction.getOriginAccount().getNum());
+                st.setInt(4, transaction.getOriginAccount().getUser().getId());
+                st.setNull(5, java.sql.Types.INTEGER);
 
             } else if (transaction.getTransactionType() == TransactionType.TRANSFER) {
                 st.setString(1, "TRANSFER");
                 st.setDouble(2, transaction.getValue());
                 st.setTimestamp(3, java.sql.Timestamp.valueOf(transaction.getDate()));
-                st.setString(4, transaction.getOriginAccount().getNum());
-                st.setString(5, transaction.getDestinationAccount().getNum());
+                st.setInt(4, transaction.getOriginAccount().getUser().getId());
+                st.setInt(5, transaction.getDestinationAccount().getUser().getId());
 
             } else if (transaction.getTransactionType() == TransactionType.MAINTENANCE_FEE) {
                 st.setString(1, "MAINTENANCE_FEE");
                 st.setDouble(2, transaction.getValue());
                 st.setTimestamp(3, java.sql.Timestamp.valueOf(transaction.getDate()));
-                st.setString(4, transaction.getOriginAccount().getNum());
+                st.setInt(4, transaction.getOriginAccount().getUser().getId());
+                st.setNull(5, java.sql.Types.INTEGER);
 
             } else if (transaction.getTransactionType() == TransactionType.INTEREST_CREDIT) {
                 st.setString(1, "INTEREST_CREDIT");
                 st.setDouble(2, transaction.getValue());
                 st.setTimestamp(3, java.sql.Timestamp.valueOf(transaction.getDate()));
-                st.setString(4, transaction.getOriginAccount().getNum());
+                st.setInt(4, transaction.getOriginAccount().getUser().getId());
+                st.setNull(5, java.sql.Types.INTEGER);
             }
 
             int rowsAffect = st.executeUpdate();
@@ -81,41 +87,17 @@ public class TransactionDAOJDBC implements TransactionDAO {
     }
 
     @Override
-    public Transaction findById(int id) {
-        PreparedStatement st = null;
-        ResultSet rs = null;
-
-        try {
-            st = conn.prepareStatement("SELECT * FROM transaction "
-                + "WHERE id = ?");
-
-            st.setInt(1, id);
-
-            rs = st.executeQuery();
-
-            if (rs.next()) {
-                Transaction transaction = createTransaction(rs);
-                return transaction;
-            }
-
-            return null;
-        } catch (SQLException e) {
-            throw new DbException(e.getMessage());
-        } finally {
-            DB.closeStatement(st);
-            DB.closeResultSet(rs);
-        }
-    }
-
-    @Override
-    public List<Transaction> findAll() {
+    public List<Transaction> findAll(int id) {
         List<Transaction> transactions = new ArrayList<>();
 
         PreparedStatement st = null;
         ResultSet rs = null;
 
         try {
-            st = conn.prepareStatement("SELECT * FROM transaction");
+            st = conn.prepareStatement("SELECT * FROM transaction "
+                + "WHERE origin_account = ?");
+
+            st.setInt(1, id);
 
             rs = st.executeQuery();
 
@@ -188,25 +170,25 @@ public class TransactionDAOJDBC implements TransactionDAO {
             Account currentAccountDestination = null;
             Account savingsAccountDestination = null; 
 
-            currentAccountOrigin = currentDao.findByNum(rs.getString(5));
-            savingsAccountOrigin = savingsDao.findByNum(rs.getString(5));
-            currentAccountDestination = currentDao.findByNum(rs.getString(6));
-            savingsAccountDestination = savingsDao.findByNum(rs.getString(6));
+            currentAccountOrigin = currentDao.findByUserId(rs.getInt(5));
+            savingsAccountOrigin = savingsDao.findByUserId(rs.getInt(5));
+            currentAccountDestination = currentDao.findByUserId(rs.getInt(6));
+            savingsAccountDestination = savingsDao.findByUserId(rs.getInt(6));
 
             if (currentAccountOrigin != null) {
                 if (currentAccountDestination != null) {
-                    transaction = new Transaction(TransactionType.WITHDRAW, value, date, currentAccountOrigin, currentAccountDestination);
+                    transaction = new Transaction(TransactionType.TRANSFER, value, date, currentAccountOrigin, currentAccountDestination);
                     transaction.setId(rs.getInt(1));
-                } else {
-                    transaction = new Transaction(TransactionType.WITHDRAW, value, date, currentAccountOrigin, savingsAccountDestination);
+                } else if (savingsAccountDestination != null) {
+                    transaction = new Transaction(TransactionType.TRANSFER, value, date, currentAccountOrigin, savingsAccountDestination);
                     transaction.setId(rs.getInt(1));
                 }
-            } else {
+            } else if (savingsAccountOrigin != null) {
                 if (currentAccountDestination != null) {
-                    transaction = new Transaction(TransactionType.WITHDRAW, value, date, savingsAccountOrigin, currentAccountDestination);
+                    transaction = new Transaction(TransactionType.TRANSFER, value, date, savingsAccountOrigin, currentAccountDestination);
                     transaction.setId(rs.getInt(1));
-                } else {
-                    transaction = new Transaction(TransactionType.WITHDRAW, value, date, savingsAccountOrigin, savingsAccountDestination);
+                } else if (savingsAccountDestination != null) {
+                    transaction = new Transaction(TransactionType.TRANSFER, value, date, savingsAccountOrigin, savingsAccountDestination);
                     transaction.setId(rs.getInt(1));
                 }
             }

@@ -13,6 +13,7 @@ import dao.UserDAO;
 import dao.db.DAOFactory;
 import dao.db.DB;
 import dao.db.DbException;
+import entities.Account;
 import entities.ClientPf;
 import entities.ClientPj;
 import entities.CurrentAccount;
@@ -164,6 +165,35 @@ public class UserDAOJDBC implements UserDAO {
         }
     }
 
+    // Método para buscar User pelo id. Usado para a instância da conta destino em account.transfer
+    @Override
+    public User findById(int id, Account account) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        User user = null;
+
+        try {
+            st = conn.prepareStatement("SELECT * FROM user "
+                + "WHERE id = ?");
+
+            st.setInt(1, id);
+
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                user = createUser(rs, account);
+            }
+
+            return user;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
     // Método para realizar login do user
     @Override
     public User login(String cpf_cnpj, String email, String password) {
@@ -211,7 +241,7 @@ public class UserDAOJDBC implements UserDAO {
                 }
 
                 // Chamada do método para instanciar usuário após a verificação dos dados
-                User user = createUser(rs, verifCpf);
+                User user = createUserLogin(rs, verifCpf);
                 
                 return user;
             } else {
@@ -225,8 +255,8 @@ public class UserDAOJDBC implements UserDAO {
         }
     }
 
-    // Método privado para criar usuário através do ResultSet e da variável verifCpf
-    private User createUser(ResultSet rs, boolean verifCpf) throws SQLException {
+    // Método privado para criar usuário através do ResultSet e da variável verifCpf no login
+    private User createUserLogin(ResultSet rs, boolean verifCpf) throws SQLException {
         User user = null;
 
         // Instânciação do user com CPF
@@ -288,5 +318,30 @@ public class UserDAOJDBC implements UserDAO {
         }
 
         return null;
+    }
+
+    private User createUser(ResultSet rs, Account account) throws SQLException {
+        User user = null;
+
+        int id = rs.getInt(1);
+        String name = rs.getString(2);
+        String email = rs.getString(3);
+        String password = rs.getString(4);
+        LocalDate birthDate = rs.getDate(5).toLocalDate();
+        String type = rs.getString(6);
+
+        if (type.equals("PF")) {
+            Long cpf = rs.getLong(8);
+
+            user = new ClientPf(name, email, password, birthDate, cpf, account);
+            user.setId(id);
+        } else {
+            Long cnpj = rs.getLong(9);
+
+            user = new ClientPj(name, email, password, birthDate, cnpj, account);
+            user.setId(id);
+        }
+
+        return user;
     }
 }
