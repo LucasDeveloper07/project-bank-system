@@ -15,6 +15,7 @@ public class Transaction {
     private Account originAccount;
     private Account destinationAccount;
 
+    // Construtor para criar uma nova transação
     public Transaction(TransactionType transactionType, Double value, LocalDateTime date, Account originAccount, Account destinationAccount) {
         this.transactionType = transactionType;
         this.value = value;
@@ -51,6 +52,7 @@ public class Transaction {
         return destinationAccount;
     }
 
+    // Método para visualizar os comprovantes
     public String viewProof() {
         StringBuilder sb = new StringBuilder();
 

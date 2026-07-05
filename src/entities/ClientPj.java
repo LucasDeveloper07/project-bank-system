@@ -24,12 +24,14 @@ public class ClientPj extends User {
         return cnpj;
     }
 
+    // Método para formatar o CNPJ em String
     private String formatCnpj(long cnpj) {
         String formatedCnpj = String.format("%014d", cnpj);
 
         return formatedCnpj;
     }
 
+    // Método estático para criar a conta na instância de ClientPj
     private static Account createAccount(TypeAccount typeAccount, Integer transferKey) {
         return switch (typeAccount) {
             case CURRENT -> new CurrentAccount(transferKey);

@@ -24,12 +24,14 @@ public class ClientPf extends User {
         return cpf;
     }
 
+    // Método para formatar o CPF em String
     private String formatCpf(long cpf) {
         String formatedCpf = String.format("%011d", cpf);
 
         return formatedCpf;
     }
 
+    // Método estático para criar a conta na instância de ClientPf
     private static Account createAccount(TypeAccount typeAccount, Integer transferKey) {
         return switch (typeAccount) {
             case CURRENT -> new CurrentAccount(transferKey);

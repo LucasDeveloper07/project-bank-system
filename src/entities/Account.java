@@ -87,6 +87,7 @@ public abstract class Account {
         transactions.add(transaction);
     }
 
+    // Método para carregar as transações do usuário após ele realizar o login
     public void loadTransactions() {
         TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
 
@@ -252,8 +253,9 @@ public abstract class Account {
         return sb.toString();
     }
 
-    // Método para realizar o desconto de manutenção na conta
+    // Método para realizar o desconto de manutenção na CurrentAccount
     protected void maintenanceDisc(double value) {
+        // Verificação de saldo
         if (balance >= value) {
             balance -= value;
 
@@ -262,18 +264,22 @@ public abstract class Account {
                 CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
                 currentDao.updateBalance(currentAccount);
 
+                // Instância de uma nova transação de MAINTENANCE_FEE
                 Transaction transaction = new Transaction(TransactionType.MAINTENANCE_FEE, value, LocalDateTime.now(), currentAccount, null);
                 addTransaction(transaction);    
 
+                // Chamada da classe DAO para registrar a transação no banco de dados
                 TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
                 transactionDao.insert(transaction);
             } else if (this instanceof SavingsAccount savingsAccount) {
                 SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
                 savingsDao.updateBalance(savingsAccount);
 
+                // Instância de uma nova transação de MAINTENANCE_FEE
                 Transaction transaction = new Transaction(TransactionType.MAINTENANCE_FEE, value, LocalDateTime.now(), savingsAccount, null);
                 addTransaction(transaction);    
 
+                // Chamada da classe DAO para registrar a transação no banco de dados
                 TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
                 transactionDao.insert(transaction);
             }
@@ -289,23 +295,28 @@ public abstract class Account {
             CurrentAccountDAO currentDao = DAOFactory.createCurrentAccountDAO();
             currentDao.updateBalance(currentAccount);
 
+            // Instância de uma nova transação de INTEREST_CREDIT
             Transaction transaction = new Transaction(TransactionType.INTEREST_CREDIT, value, LocalDateTime.now(), currentAccount, null);
             addTransaction(transaction);    
 
+            // Chamada da classe DAO para registrar a transação no banco de dados
             TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
             transactionDao.insert(transaction);
         } else if (this instanceof SavingsAccount savingsAccount) {
             SavingsAccountDAO savingsDao = DAOFactory.createSavingsAccountDAO();
             savingsDao.updateBalance(savingsAccount);
 
+            // Instância de uma nova transação de INTEREST_CREDIT
             Transaction transaction = new Transaction(TransactionType.INTEREST_CREDIT, value, LocalDateTime.now(), savingsAccount, null);
             addTransaction(transaction);    
 
+            // Chamada da classe DAO para registrar a transação no banco de dados
             TransactionDAO transactionDao = DAOFactory.createTransactionDAO();
             transactionDao.insert(transaction);
         }
     }
 
+    // Método para gerar uma sequência de números para a Account
     private String generateNum() {
         Random rm = new Random();
         int num = rm.nextInt(10000000, 99999999);
@@ -315,6 +326,7 @@ public abstract class Account {
         return numStr;
     }
 
+    // Método para gerar uma sequência de números para a agência de Account
     private String generateAgencyNum() {
         Random rm = new Random();
         int num = rm.nextInt(10000, 99999);

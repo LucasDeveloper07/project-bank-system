@@ -9,6 +9,8 @@ import dao.daoImpl.SavingsAccountDAOJDBC;
 import dao.daoImpl.TransactionDAOJDBC;
 import dao.daoImpl.UserDAOJDBC;
 
+// Criação das implementações JDBC das interfaces DAO
+
 public class DAOFactory {
 
     public static UserDAO createUserDAO() {

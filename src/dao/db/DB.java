@@ -13,6 +13,7 @@ public class DB {
     
     private static Connection conn = null;
 
+    // Método para realizar a conexão com o banco de dados
     public static Connection getConnection() {
         if (conn == null) {
             try {
@@ -27,6 +28,7 @@ public class DB {
         return conn;
     }
 
+    // Método para carregar as propriedades de conexão no arquivo "db.properties"
     private static Properties loadProperties() {
         try(FileInputStream fs = new FileInputStream("db.properties")) {
             Properties props = new Properties();
@@ -38,6 +40,7 @@ public class DB {
         }
     }
 
+    // Método para fechar a conexão com o banco de dados
     public static void closeConnection() {
         if (conn != null) {
             try {
@@ -48,6 +51,7 @@ public class DB {
         }
     }
 
+    // Método para fechar o Statement
     public static void closeStatement(Statement st) {
         if (st != null) {
             try {
@@ -58,6 +62,7 @@ public class DB {
         }
     }
 
+    // Método para fechar o ResultSet
     public static void closeResultSet(ResultSet rs) {
         if (rs != null) {
             try {

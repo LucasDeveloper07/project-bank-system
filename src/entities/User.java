@@ -67,6 +67,7 @@ public abstract class User {
         return account;
     }
 
+    // Método para usuário alterar a senha
     public void modifiedPassword(String newPassword, String passwordVerified) {
         if (newPassword.equals(password)) {
             throw new UserException("Você não pode usar a senha atual!");
@@ -79,6 +80,7 @@ public abstract class User {
         }
     }
 
+    // Método para usuário alterar o nome de cadastro
     public void modifiedName(String passwordVerified, String newName) {
         if (newName.equals(name)) {
             throw new UserException("Você não pode usar o nome atual!");
