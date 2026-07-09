@@ -14,7 +14,6 @@ import dao.db.DbException;
 import entities.Account;
 import entities.CurrentAccount;
 import entities.SavingsAccount;
-import exceptions.UserException;
 
 public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
 
