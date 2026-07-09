@@ -105,69 +105,6 @@ public class SavingsAccountDAOJDBC implements SavingsAccountDAO {
         }
     }
 
-    // Método para deletar a conta do banco de dados após o usuário encerrar a sua conta
-    @Override
-    public void delete(SavingsAccount savingsAccount, String password) {
-        // Verificação da senha do usuário para confirmar a operação
-        if (!password.equals(savingsAccount.getUser().getPassword())) {
-            throw new UserException("Senha incorreta!");
-        }
-
-        PreparedStatement st = null;
-
-        try {
-            conn.setAutoCommit(false); // Controle manual da transação para manter a integridade do banco de dados
-
-            // Chamada da operação delete da classe UserDAO para apagar o usuário
-            UserDAO userDao = DAOFactory.createUserDAO();
-            userDao.delete(savingsAccount.getUser());
-
-            // Operação para apagar a savingsAccount
-            st = conn.prepareStatement("DELETE FROM savings_account "
-                + "WHERE num = ?");
-
-            st.setString(1, savingsAccount.getNum());
-
-            int rowsAffect = st.executeUpdate();
-
-            if (rowsAffect == 0) {
-                throw new DbException("Erro inesperado! Nenhuma linha foi atualizada.");
-            }
-
-            conn.commit(); // Chamada do método para confirmar a operação
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException e1) {
-                    throw new DbException(e1.getMessage());
-                }
-            }
-
-            throw new DbException(e.getMessage());
-        } catch (DbException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException e1) {
-                    throw new DbException(e1.getMessage());
-                }
-            }
-
-            throw new DbException(e.getMessage());
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                } catch (SQLException e) {
-                    throw new DbException(e.getMessage());
-                }
-            }
-
-            DB.closeStatement(st);
-        }
-    }
-
     // Método para buscar savingsAccount pelo id do usuário (Este método é usado no login para iniciar a conta do usuário)
     @Override
     public SavingsAccount findByUserId(int id) {

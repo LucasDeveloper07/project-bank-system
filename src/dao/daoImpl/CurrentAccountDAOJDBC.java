@@ -106,69 +106,6 @@ public class CurrentAccountDAOJDBC implements CurrentAccountDAO {
         }
     }
 
-    // Método para deletar a conta do banco de dados após o usuário encerrar a sua conta
-    @Override
-    public void delete(CurrentAccount currentAccount, String password) {
-        // Verificação da senha do usuário para confirmar a operação
-        if (!password.equals(currentAccount.getUser().getPassword())) {
-            throw new UserException("Senha incorreta!");
-        }
-        
-        PreparedStatement st = null;
-
-        try {
-            conn.setAutoCommit(false); // Controle manual da transação para manter a integridade do banco de dados
-
-            // Chamada da operação delete da classe UserDAO para apagar o usuário
-            UserDAO userDao = DAOFactory.createUserDAO();
-            userDao.delete(currentAccount.getUser());
-
-            // Operação para apagar a currentAccount
-            st = conn.prepareStatement("DELETE FROM current_account "
-                + "WHERE num = ?");
-
-            st.setString(1, currentAccount.getNum());
-
-            int rowsAffect = st.executeUpdate();
-
-            if (rowsAffect == 0) {
-                throw new DbException("Erro inesperado! Nenhuma linha foi atualizada.");
-            }
-
-            conn.commit(); // Chamada do método para confirmar a operação
-        } catch (SQLException e) {
-            if (conn != null) {
-                try {
-                    conn.rollback(); // Em caso de exceção, o rollback desfaz todas as operações
-                } catch (SQLException e1) {
-                    throw new DbException(e1.getMessage());
-                }
-            }
-
-            throw new DbException(e.getMessage());
-        } catch (DbException e1) {
-            if (conn != null) {
-                try {
-                    conn.rollback(); // Em caso de exceção, o rollback desfaz todas as operações
-                } catch (SQLException e2) {
-                    throw new DbException(e2.getMessage());
-                }
-            }
-
-            throw new DbException(e1.getMessage());
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                } catch (SQLException e) {
-                    throw new DbException(e.getMessage());
-                }
-            }
-
-            DB.closeStatement(st);
-        }
-    }
-
     // Método para buscar currentAccount pelo id do usuário (Este método é usado no login para iniciar a conta do usuário)
     @Override
     public CurrentAccount findByUserId(int id) {

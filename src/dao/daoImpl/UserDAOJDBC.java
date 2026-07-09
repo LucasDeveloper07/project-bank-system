@@ -142,29 +142,6 @@ public class UserDAOJDBC implements UserDAO {
         }
     }
 
-    // Método para deletar User do banco de dados
-    @Override
-    public void delete(User user) {
-        PreparedStatement st = null;
-
-        try {
-            st = conn.prepareStatement("DELETE FROM user "
-                + "WHERE id = ?");
-
-            st.setInt(1, user.getId());
-
-            int rowsAffect = st.executeUpdate();
-
-            if (rowsAffect == 0) {
-                throw new DbException("Erro inesperado! Nenhuma linha foi atualizada.");
-            }
-        } catch (SQLException e) {
-            throw new DbException(e.getMessage());
-        } finally {
-            DB.closeStatement(st);
-        }
-    }
-
     // Método para buscar User pelo id. Usado para a instância da conta destino em account.transfer
     @Override
     public User findById(int id, Account account) {

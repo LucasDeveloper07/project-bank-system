@@ -10,7 +10,6 @@ public interface CurrentAccountDAO {
     void insert(CurrentAccount currentAccount);
     void updateBalance(CurrentAccount currentAccount);
     void updateMaintenanceDate(LocalDate date, String num);
-    void delete(CurrentAccount currentAccount, String password);
     CurrentAccount findByUserId(int id);
     CurrentAccount findByTransferKey(int transferKey);
     CurrentAccount findByNum(String num);
